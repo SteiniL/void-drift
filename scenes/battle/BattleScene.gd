@@ -4,6 +4,8 @@ extends Node2D
 const DRAW_PER_TURN: int = 5
 const DRIFT_THRESHOLDS: Array[int] = [3, 4, 5]
 const FloatingLabelScene = preload("res://scenes/ui/FloatingLabel.gd")
+const CardRewardOverlayScene = preload("res://scenes/ui/CardRewardOverlay.gd")
+const CardPoolScript = preload("res://data/cards/CardPool.gd")
 
 var enemy_data: EnemyData
 var enemy_hp: int
@@ -376,9 +378,69 @@ func _refresh_hud() -> void:
 
 func _on_battle_won() -> void:
 	battle_over = true
+	GameState.battles_won += 1
 	EventBus.battle_won.emit(enemy_data)
 	end_turn_button.disabled = true
+	_show_card_reward()
 
 func _on_battle_lost() -> void:
 	battle_over = true
 	end_turn_button.disabled = true
+
+func _show_card_reward() -> void:
+	var overlay := CardRewardOverlayScene.new()
+	add_child(overlay)
+	var reward_cards: Array[CardData] = CardPoolScript.get_random_rewards(3, GameState.deck)
+	overlay.setup(reward_cards)
+	overlay.card_chosen.connect(_on_reward_card_chosen)
+	overlay.closed.connect(_start_next_battle)
+
+func _on_reward_card_chosen(card: CardData) -> void:
+	GameState.deck.append(card)
+
+func _start_next_battle() -> void:
+	if GameState.battles_won >= 5:
+		_show_run_complete()
+		return
+	battle_over = false
+	enemy_status.clear()
+	player_status.clear()
+	action_index = 0
+	turn_number = 0
+	cards_played_this_turn.clear()
+	player_block = 0
+	enemy_block = 0
+	end_turn_button.disabled = false
+	enemy_data = EnemyFactory.create_random_common()
+	enemy_hp = enemy_data.max_hp
+	enemy_block = 0
+	DeckManager.setup_battle()
+	enemy_node.update_display(enemy_hp, enemy_block, enemy_data, enemy_status)
+	_refresh_intent()
+	_start_player_turn()
+
+func _show_run_complete() -> void:
+	var panel := ColorRect.new()
+	panel.color = Color(0.0, 0.0, 0.1, 0.9)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(panel)
+
+	var label := Label.new()
+	label.text = "Run Complete!\n%d Battles Won" % GameState.battles_won
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 36)
+	label.set_anchors_preset(Control.PRESET_CENTER)
+	label.position = Vector2(-200, -80)
+	panel.add_child(label)
+
+	var btn := Button.new()
+	btn.text = "New Run"
+	btn.custom_minimum_size = Vector2(160, 48)
+	btn.set_anchors_preset(Control.PRESET_CENTER)
+	btn.position = Vector2(-80, 20)
+	btn.pressed.connect(_on_new_run_pressed)
+	panel.add_child(btn)
+
+func _on_new_run_pressed() -> void:
+	GameState.start_new_run(StarterDeck.create())
+	get_tree().reload_current_scene()

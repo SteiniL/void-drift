@@ -26,7 +26,7 @@ func _rebuild_hand() -> void:
 		card_ui.card_selected.connect(_on_card_selected.bindv([card]))
 
 func _on_card_selected(card: CardData) -> void:
-	var card_ui: CardUI = card_ui_map[card]
+	var card_ui: Control = card_ui_map[card]
 	card_ui.set_selected(!card_ui.is_selected)
 	_emit_selection_changed()
 
