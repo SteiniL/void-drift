@@ -196,19 +196,36 @@ func play_selected_cards(selected_cards: Array[CardData]) -> void:
 	card_hand._rebuild_hand()
 	_refresh_hud()
 
+func _check_card_condition(card: CardData) -> bool:
+	match card.condition:
+		GameEnums.Condition.ENEMY_HAS_BURN:
+			return enemy_status.get(GameEnums.StatusEffect.BURN, 0) > 0
+		GameEnums.Condition.ENEMY_HAS_EXPOSED:
+			return enemy_status.get(GameEnums.StatusEffect.EXPOSED, 0) > 0
+	return true
+
 func _apply_card_effects(card: CardData) -> void:
 	var weapon_damaged: bool = GameState.module_hp[GameEnums.Module.WEAPONS] <= 0
-	var dmg: int = card.damage
+	var base_dmg: int = card.damage
 	if weapon_damaged:
-		dmg = max(0, dmg - 1)
+		base_dmg = max(0, base_dmg - 1)
 
-	if dmg > 0:
-		# EXPOSED: +2 damage per stack
+	# ScaleTarget: multiply base damage by hand size
+	if card.scale_by == GameEnums.ScaleTarget.HAND_SIZE:
+		base_dmg = card.damage * DeckManager.hand.size()
+		if weapon_damaged:
+			base_dmg = max(0, base_dmg - 1)
+
+	if base_dmg > 0 and _check_card_condition(card):
 		var exposed: int = enemy_status.get(GameEnums.StatusEffect.EXPOSED, 0)
-		dmg += exposed * 2
-		_deal_damage_to_enemy(dmg)
-		if battle_over:
-			return
+		for _i in range(card.hits):
+			var hit_dmg: int = base_dmg + exposed * 2
+			_deal_damage_to_enemy(hit_dmg)
+			if battle_over:
+				return
+
+	if card.self_damage > 0:
+		GameState.take_damage(card.self_damage)
 
 	if card.block > 0:
 		var shields_damaged: bool = GameState.module_hp[GameEnums.Module.SHIELDS] <= 0
