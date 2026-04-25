@@ -391,9 +391,9 @@ func _show_card_reward() -> void:
 	var overlay := CardRewardOverlayScene.new()
 	add_child(overlay)
 	var reward_cards: Array[CardData] = CardPoolScript.get_random_rewards(3, GameState.deck)
-	overlay.setup(reward_cards)
 	overlay.card_chosen.connect(_on_reward_card_chosen)
 	overlay.closed.connect(_start_next_battle)
+	overlay.setup(reward_cards)
 
 func _on_reward_card_chosen(card: CardData) -> void:
 	GameState.deck.append(card)
@@ -413,7 +413,6 @@ func _start_next_battle() -> void:
 	end_turn_button.disabled = false
 	enemy_data = EnemyFactory.create_random_common()
 	enemy_hp = enemy_data.max_hp
-	enemy_block = 0
 	DeckManager.setup_battle()
 	enemy_node.update_display(enemy_hp, enemy_block, enemy_data, enemy_status)
 	_refresh_intent()

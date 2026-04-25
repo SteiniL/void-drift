@@ -23,7 +23,7 @@ func _rebuild_hand() -> void:
 		add_child(card_ui)
 		card_ui.setup(card)
 		card_ui_map[card] = card_ui
-		card_ui.card_selected.connect(_on_card_selected.bindv([card]))
+		card_ui.card_selected.connect(_on_card_selected)
 
 func _on_card_selected(card: CardData) -> void:
 	var card_ui: Control = card_ui_map[card]
