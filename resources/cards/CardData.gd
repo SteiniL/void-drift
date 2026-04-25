@@ -13,6 +13,10 @@ extends Resource
 @export var draw: int = 0
 @export var status_effect: GameEnums.StatusEffect = GameEnums.StatusEffect.NONE
 @export var status_stacks: int = 0
+@export var hits: int = 1
+@export var condition: GameEnums.Condition = GameEnums.Condition.NONE
+@export var scale_by: GameEnums.ScaleTarget = GameEnums.ScaleTarget.NONE
+@export var self_damage: int = 0
 @export var upgraded: bool = false
 @export var sprite: Texture2D
 
@@ -29,6 +33,10 @@ func duplicate_card() -> CardData:
 	copy.draw = draw
 	copy.status_effect = status_effect
 	copy.status_stacks = status_stacks
+	copy.hits = hits
+	copy.condition = condition
+	copy.scale_by = scale_by
+	copy.self_damage = self_damage
 	copy.upgraded = upgraded
 	copy.sprite = sprite
 	return copy
