@@ -3,6 +3,7 @@ extends Node2D
 
 const DRAW_PER_TURN: int = 5
 const DRIFT_THRESHOLDS: Array[int] = [3, 4, 5]
+const FloatingLabelScene = preload("res://scenes/ui/FloatingLabel.gd")
 
 var enemy_data: EnemyData
 var enemy_hp: int
@@ -70,6 +71,7 @@ func _start_player_turn() -> void:
 	var burn: int = player_status.get(GameEnums.StatusEffect.BURN, 0)
 	if burn > 0:
 		GameState.take_damage(burn)
+		_spawn_float("BURN -%d" % burn, Vector2(120, 80), Color(1.0, 0.5, 0.1))
 		_decay_status(player_status, GameEnums.StatusEffect.BURN)
 
 	# SHIELD_UP: gain block equal to stacks, then decay
@@ -250,6 +252,8 @@ func _deal_damage_to_enemy(dmg: int) -> void:
 	var remaining: int = dmg - absorbed
 	enemy_hp = max(0, enemy_hp - remaining)
 	EventBus.damage_dealt.emit("enemy", remaining)
+	if remaining > 0:
+		_spawn_float("-%d" % remaining, enemy_node.position + Vector2(20, -60), Color(1.0, 0.3, 0.3))
 	enemy_node.update_display(enemy_hp, enemy_block, enemy_data, enemy_status)
 	if enemy_hp <= 0:
 		_on_battle_won()
@@ -290,6 +294,8 @@ func _apply_drift_bonus(type: GameEnums.CardType, level: int) -> void:
 
 	if bonus_dmg > 0:
 		_deal_damage_to_enemy(bonus_dmg)
+		var vp_center := get_viewport_rect().size / 2.0
+		_spawn_float("DRIFT +%d!" % bonus_dmg, vp_center + Vector2(-40, 0), Color(1.0, 0.85, 0.0))
 
 func _on_end_turn_pressed() -> void:
 	if battle_over:
@@ -306,6 +312,7 @@ func _enemy_turn() -> void:
 	if burn > 0:
 		enemy_hp = max(0, enemy_hp - burn)
 		EventBus.damage_dealt.emit("enemy", burn)
+		_spawn_float("BURN -%d" % burn, enemy_node.position + Vector2(20, -60), Color(1.0, 0.5, 0.1))
 		_decay_status(enemy_status, GameEnums.StatusEffect.BURN)
 		enemy_node.update_display(enemy_hp, enemy_block, enemy_data, enemy_status)
 		if enemy_hp <= 0:
@@ -351,12 +358,18 @@ func _deal_player_damage(dmg: int) -> void:
 	player_block = max(0, player_block - absorbed)
 	if remaining > 0:
 		GameState.take_damage(remaining)
+		_spawn_float("-%d" % remaining, Vector2(120, 80), Color(1.0, 0.3, 0.3))
 
 func _decay_status(status_dict: Dictionary, effect: GameEnums.StatusEffect) -> void:
 	if status_dict.has(effect):
 		status_dict[effect] -= 1
 		if status_dict[effect] <= 0:
 			status_dict.erase(effect)
+
+func _spawn_float(text: String, pos: Vector2, color: Color) -> void:
+	var label := FloatingLabelScene.new()
+	add_child(label)
+	label.spawn(text, pos, color)
 
 func _refresh_hud() -> void:
 	hud.update_all(player_block, turn_number, player_status)
