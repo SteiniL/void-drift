@@ -1,0 +1,21 @@
+# Godot 4+ generated files
+.godot/
+/android/
+
+# macOS
+.DS_Store
+
+# AI/tool config (local only)
+.claude/
+.vexp/
+.mcp.json
+.claudeignore
+vexp.toml
+
+# Exported binaries
+*.exe
+*.x86_64
+*.arm64
+*.app
+*.apk
+*.aab
