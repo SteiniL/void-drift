@@ -207,18 +207,17 @@ func _check_card_condition(card: CardData) -> bool:
 func _apply_card_effects(card: CardData) -> void:
 	var weapon_damaged: bool = GameState.module_hp[GameEnums.Module.WEAPONS] <= 0
 	var base_dmg: int = card.damage
-	if weapon_damaged:
-		base_dmg = max(0, base_dmg - 1)
 
 	# ScaleTarget: multiply base damage by hand size
 	if card.scale_by == GameEnums.ScaleTarget.HAND_SIZE:
 		base_dmg = card.damage * DeckManager.hand.size()
-		if weapon_damaged:
-			base_dmg = max(0, base_dmg - 1)
+
+	if weapon_damaged:
+		base_dmg = max(0, base_dmg - 1)
 
 	if base_dmg > 0 and _check_card_condition(card):
-		var exposed: int = enemy_status.get(GameEnums.StatusEffect.EXPOSED, 0)
 		for _i in range(card.hits):
+			var exposed: int = enemy_status.get(GameEnums.StatusEffect.EXPOSED, 0)
 			var hit_dmg: int = base_dmg + exposed * 2
 			_deal_damage_to_enemy(hit_dmg)
 			if battle_over:
