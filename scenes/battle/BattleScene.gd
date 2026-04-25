@@ -106,8 +106,11 @@ func _calculate_preview(selected_cards: Array[CardData]) -> Dictionary:
 	# Sum up all card values
 	for card in selected_cards:
 		total_cost += card.cost
-		if card.damage > 0:
-			total_damage += card.damage
+		if card.damage > 0 and _check_card_condition(card):
+			var card_dmg: int = card.damage
+			if card.scale_by == GameEnums.ScaleTarget.HAND_SIZE:
+				card_dmg = card.damage * DeckManager.hand.size()
+			total_damage += card_dmg * card.hits
 			damage_cards += 1
 		total_block += card.block
 		total_draw += card.draw
