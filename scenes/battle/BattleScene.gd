@@ -72,6 +72,19 @@ func _start_player_turn() -> void:
 		GameState.take_damage(burn)
 		_decay_status(player_status, GameEnums.StatusEffect.BURN)
 
+	# SHIELD_UP: gain block equal to stacks, then decay
+	var shield_up: int = player_status.get(GameEnums.StatusEffect.SHIELD_UP, 0)
+	if shield_up > 0:
+		player_block += shield_up
+		_decay_status(player_status, GameEnums.StatusEffect.SHIELD_UP)
+
+	# OVERLOAD: take stacks damage, gain stacks energy (risk/reward), then decay
+	var overload: int = player_status.get(GameEnums.StatusEffect.OVERLOAD, 0)
+	if overload > 0:
+		GameState.take_damage(overload)
+		GameState.current_energy += overload
+		_decay_status(player_status, GameEnums.StatusEffect.OVERLOAD)
+
 	DeckManager.draw_cards(DRAW_PER_TURN)
 	drift_indicator.reset()
 	_refresh_hud()
