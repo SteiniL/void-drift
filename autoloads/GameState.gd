@@ -11,6 +11,7 @@ var max_hp: int = MAX_HP
 var current_energy: int = BASE_ENERGY
 var gold: int = 0
 var sector: int = 1
+var battles_won: int = 0
 
 var deck: Array[CardData] = []
 var relics: Array[RelicData] = []
@@ -60,6 +61,7 @@ func start_new_run(starter_deck: Array[CardData]) -> void:
 	current_energy = BASE_ENERGY
 	gold = 0
 	sector = 1
+	battles_won = 0
 	deck = starter_deck.duplicate()
 	relics = []
 	module_hp = {
