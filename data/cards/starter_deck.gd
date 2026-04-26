@@ -8,7 +8,7 @@ static func create() -> Array[CardData]:
 	# ENERGY x3
 	deck.append(_make("plasma_bolt", "Plasma Bolt", "Deal 6 damage.", 1,
 		GameEnums.CardType.ENERGY, 6, 0, 0))
-	deck.append(_make("laser_burst", "Laser Burst", "Deal 4 damage twice.", 1,
+	deck.append(_make("laser_burst", "Laser Burst", "Deal 4 damage.", 1,
 		GameEnums.CardType.ENERGY, 4, 0, 0))
 	deck.append(_make("beam_cannon", "Beam Cannon", "Deal 10 damage.", 2,
 		GameEnums.CardType.ENERGY, 10, 0, 0))

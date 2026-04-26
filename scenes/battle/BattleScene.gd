@@ -81,6 +81,7 @@ func _start_player_turn() -> void:
 	if shield_up > 0:
 		player_block += shield_up
 		_decay_status(player_status, GameEnums.StatusEffect.SHIELD_UP)
+		_spawn_float("+%d Block" % shield_up, Vector2(120, 80), Color(0.3, 0.6, 1.0))
 
 	# OVERLOAD: take stacks damage, gain stacks energy (risk/reward), then decay
 	var overload: int = player_status.get(GameEnums.StatusEffect.OVERLOAD, 0)
@@ -88,6 +89,7 @@ func _start_player_turn() -> void:
 		GameState.take_damage(overload)
 		GameState.current_energy += overload
 		_decay_status(player_status, GameEnums.StatusEffect.OVERLOAD)
+		_spawn_float("OVERLOAD -%d" % overload, Vector2(120, 80), Color(0.8, 0.2, 1.0))
 
 	DeckManager.draw_cards(DRAW_PER_TURN)
 	drift_indicator.reset()
@@ -114,7 +116,8 @@ func _calculate_preview(selected_cards: Array[CardData]) -> Dictionary:
 			var card_dmg: int = card.damage
 			if card.scale_by == GameEnums.ScaleTarget.HAND_SIZE:
 				card_dmg = card.damage * DeckManager.hand.size()
-			total_damage += card_dmg * card.hits
+			var exposed: int = enemy_status.get(GameEnums.StatusEffect.EXPOSED, 0)
+			total_damage += (card_dmg + exposed * 2) * card.hits
 			damage_cards += 1
 		total_block += card.block
 		total_draw += card.draw
@@ -124,10 +127,6 @@ func _calculate_preview(selected_cards: Array[CardData]) -> Dictionary:
 	# Apply module damage modifiers
 	if GameState.module_hp[GameEnums.Module.WEAPONS] <= 0:
 		total_damage = max(0, total_damage - 1)
-
-	# Check for EXPOSED bonus (each damage card gets +2 per stack)
-	var exposed: int = enemy_status.get(GameEnums.StatusEffect.EXPOSED, 0)
-	total_damage += exposed * 2 * damage_cards
 
 	# Check for drift bonus
 	var drift_info: Dictionary = _calculate_drift(selected_cards)

@@ -68,6 +68,7 @@ static func get_all() -> Array[CardData]:
 	return pool
 
 static func get_random_rewards(count: int, _current_deck: Array[CardData]) -> Array[CardData]:
+	# TODO: use _current_deck to avoid offering cards already owned
 	var pool := get_all()
 	pool.shuffle()
 	var result: Array[CardData] = []
